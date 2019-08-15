@@ -1,0 +1,8 @@
+/**
+*
+* RubyShogi versions:
+*
+*   - 0.21
+*     + Initial release
+*
+**/
