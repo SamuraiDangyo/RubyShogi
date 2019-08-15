@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+##
+# RubyShogi, a Shogi Engine
+# Author: Toni Helminen
+# License: GPLv3
+##
+
+require 'ruby_shogi'
+
+RubyShogi.go
