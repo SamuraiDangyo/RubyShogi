@@ -83,11 +83,11 @@ module Eval
 		0.01 * score
 	end
 	
-	def Eval.material(board)
-		board.print_board
-		puts Eval.material2(board)
-		puts Eval.material3(board)
-		fail if Eval.material2(board) != Eval.material3(board)
+	def Eval.material2(board)
+		#board.print_board
+		#puts Eval.material2(board)
+		#puts Eval.material3(board)
+		#fail if Eval.material2(board) != Eval.material3(board)
 		0
 	end
 	
@@ -105,7 +105,7 @@ module Eval
 		score
 	end
 	
-	def Eval.material2(board)
+	def Eval.material(board)
 		score = 0
 		board.brd.each do |p|
 			score += case p
