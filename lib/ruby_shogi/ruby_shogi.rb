@@ -40,7 +40,7 @@ $stderr.reopen("ruby_shogi-error.txt", "a+")
 
 module RubyShogi
 	NAME = "RubyShogi"
-	VERSION = "0.22"
+	VERSION = "0.23"
 	AUTHOR = "Toni Helminen"
 
 	def RubyShogi.init

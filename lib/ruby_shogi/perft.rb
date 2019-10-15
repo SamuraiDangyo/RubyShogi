@@ -82,7 +82,7 @@ class Perft
 		total_nodes = 0
 		copy = @board
 		mgen = @board.mgen_generator
-		n, moves = 0, mgen.generate_moves
+		moves = mgen.generate_moves
 		moves.each_with_index do |m, i|
 			@board = m
 			start = Time.now
@@ -142,8 +142,6 @@ class Perft
 	
 	def suite(depth)
 		puts "~~~ suite( #{depth} ) ~~~"
-		start = Time.now
-		total_nodes = 0
 		SUITE.each_with_index { |s, i| run_suite(s, i, depth) }
 	end
 end # class Perft

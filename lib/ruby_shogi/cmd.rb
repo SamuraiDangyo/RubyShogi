@@ -15,7 +15,7 @@ class Cmd
 		@fen = nil
 	end
 	
-	def name
+	def version
 		puts "#{RubyShogi::NAME} v#{RubyShogi::VERSION} by #{RubyShogi::AUTHOR}"
 	end
 	
@@ -172,18 +172,18 @@ class Cmd
 	end
 	
 	def help
-		puts "Usage: ruby shuriken_ruby.rb [OPTION]... [PARAMS]..."
+		puts "Usage: ruby_shogi [OPTION]... [PARAMS]..."
 		puts "###"
 		puts "-help: This Help"
 		puts "-xboard: Enter Xboard Mode"
 		puts "-tactics: Run Tactics"
-		puts "-name: Print Name Tactics"
+		puts "-version: Version"
 		puts "-rubybench: Benchmark Ruby"
-		puts "-bench: Benchmark ShurikenShogi Engine"
-		puts "-mbench: Benchmark ShurikenShogi Movegen"
+		puts "-bench: Benchmark "
+		puts "-mbench: Benchmark Movegen"
 		puts "-perft [NUM]: Run Perft"
 		puts "-perft_by_moves [NUM]: Run Perft By Moves"
-		puts "-profile: Profile ShurikenShogi"
+		puts "-profile: Profile RubyShogi"
 		puts "-randommode: Activate Random Mode"
 		puts "-fen [FEN]: Set Fen"
 		puts "-stats [NUM]: Statistical Analysis"
@@ -204,7 +204,7 @@ class Cmd
 			when "-randommode" then randommode
 			when "-tactics" then tactics
 			when "-test" then test
-			when "-name" then name
+			when "-version" then version
 			when "-fen" then fen
 			when "-list" then list
 			when "-profile" then profile

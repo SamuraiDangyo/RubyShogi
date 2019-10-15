@@ -442,7 +442,6 @@ class Board
 		brd = nil
 		loop do
 			brd = randpos2
-			brd2 = brd
 			mgen = brd.mgen_generator
 			next if mgen.checks_b? || mgen.checks_w?
 			break
