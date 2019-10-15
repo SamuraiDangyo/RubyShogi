@@ -1,8 +1,7 @@
-/**
-*
-* RubyShogi versions:
-*
-*   - 0.21
-*     + Initial release
-*
-**/
+RubyShogi versions:
+
+ - 0.21
+  - Initial release
+
+ - 0.22
+  - Bug fixes
