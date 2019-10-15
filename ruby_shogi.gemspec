@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
 	s.name        = 'RubyShogi'
-	s.version     = '0.21'
+	s.version     = '0.22'
 	s.executables << 'ruby_shogi'
-	s.date        = '2019-08-13'
+	s.date        = '2019-10-15'
 	s.summary     = "a Shogi Engine"
 	s.description = "RubyShogi, a Shogi Engine"
 	s.authors     = ["Toni Helminen"]

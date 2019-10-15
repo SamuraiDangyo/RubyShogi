@@ -44,14 +44,24 @@ class MgenBlack < RubyShogi::Mgen
 		copy.brd[@from_gen] = 0
 		copy.brd[to] = me
 		copy.bking = to if me == -14
-		#fail if copy.find_black_king != copy.bking
+		copy.mustbeok
 		@board = copy
 		@moves.push << copy if !checks_w?
 		@board = board2
 	end
 	
+	def can_white_king_run?(to2) 
+		x, y = to2 % 9, to2 / 9
+		KING_MOVES.each do |jmp|
+			px, py = x + jmp[0], y + jmp[1]
+			to = px + 9 * py
+			return true if is_on_board?(px, py) && @board.walkable_w?(to) && !checks_b?(to, false)
+		end
+		false
+	end
+	
 	def pawn_drop_checkmate?(to) 
-		@board.brd[to - 9] == 14 && !checks_w?(to - 9) ? true : false
+		@board.brd[to - 9] == 14 && (!checks_w?(to, false) && !can_white_king_run?(to - 9)) ? true : false
 	end
 	
 	def add_new_drop_move(me, to) 
@@ -59,19 +69,18 @@ class MgenBlack < RubyShogi::Mgen
 		return if me == -5 && to / 9 <= 1
 		board2 = @board
 		copy = @board.copy_me
-		copy.from = @from_gen
+		copy.from = -1
 		copy.to = to
 		copy.drop = me
 		copy.r50 += 1
 		copy.fullmoves += 1
 		copy.eat = 0
-		copy.wtm = ! copy.wtm
-		copy.brd[@from_gen] = 0
+		copy.wtm = !copy.wtm
 		copy.brd[to] = me
 		copy.black_pocket = remove_from_array(copy.black_pocket, me)
-		#fail if copy.find_black_king != copy.bking
+		copy.mustbeok
 		@board = copy
-		if !checks_w? && !(me == 1 && pawn_drop_checkmate?(to))
+		if !checks_w? && !(me == -1 && pawn_drop_checkmate?(to))
 			@moves.push << copy
 		end
 		@board = board2
@@ -79,7 +88,7 @@ class MgenBlack < RubyShogi::Mgen
 	
 	def handle_promotion?(me, to)
 		return true if must_promote?(me, to)
-		return false if to / 9 > 2 && @from_gen / 9 > 2
+		return false if to / 9 >= 3 && @from_gen / 9 >= 3
 		case me
 		when -1 
 			push_move(-1, to, PROMO_STAY)
@@ -163,15 +172,11 @@ class MgenBlack < RubyShogi::Mgen
 	end
 	
 	def pawn_on_column?(c)
-		ret = false
 		9.times do |i|
-			to = -9 * i + 8 * 9 + c
-			if to != @from_gen && @board.brd[to] == -1
-				ret = true
-				break
-			end
+			to = 9 * i + c
+			return true if to != @from_gen && @board.brd[to] == -1
 		end
-		ret
+		false
 	end
 	
 	def put_pawn_drops
@@ -190,7 +195,8 @@ class MgenBlack < RubyShogi::Mgen
 	end
 	
 	def generate_drops
-		@board.black_pocket.each do |piece|
+		nodub = @board.black_pocket.dup.uniq
+		nodub.each do |piece|
 			case piece
 			when -1 then put_pawn_drops
 			when -3 then put_drops(-3)

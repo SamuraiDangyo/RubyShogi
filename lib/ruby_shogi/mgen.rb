@@ -54,17 +54,8 @@ class Mgen
 	end
 	
 	def remove_from_array(array, x)
-		found, a = false, []
-		array.each do |q|
-			if q == x
-				a.push(q) if found
-				found = true 
-			else
-				a.push(q)
-			end
-		end
-		fail if !found
-		a
+		array.delete_at(array.index(x) || array.length)
+		array
 	end
 	
 	def good_coord?(i)
@@ -112,15 +103,16 @@ class Mgen
 	def jump_checks_to?(jumps, here)
 		jumps.each do |jmp|
 			px, py = @x_checks + jmp[0], @y_checks + jmp[1]
-			return true if px + py * 9 == here
+			return true if is_on_board?(px, py) && px + py * 9 == here
 		end
 		false
 	end
 	
-	def checks_w?#(here)
-		here = @board.bking
+	def checks_w?(here = nil, useking = true)
+		here = here == nil ? @board.bking : here
+		#fail if @board.find_black_king !=  here
 		81.times do |i|
-			@x_checks, @y_checks = i % 9, i / 9 
+			@x_checks, @y_checks = i % 9, (i / 9).to_i
 			case @board.brd[i]
 			when 1 then return true if pawn_checks_w?(here)
 			when 2 then return true if jump_checks_to?(WHITE_GOLD_GENERAL_MOVES, here)
@@ -135,16 +127,17 @@ class Mgen
 			when 11 then return true if slider_checks_to?(BISHOP_MOVES, here) || jump_checks_to?(PROMOTED_BISHOP_MOVES, here)
 			when 12 then return true if slider_checks_to?(ROOK_MOVES, here)
 			when 13 then return true if slider_checks_to?(ROOK_MOVES, here) || jump_checks_to?(PROMOTED_ROOK_MOVES, here)
-			when 14 then return true if jump_checks_to?(KING_MOVES, here)
+			when 14 then return true if useking && jump_checks_to?(KING_MOVES, here)
 			end
 		end
 		false
 	end
-	
-	def checks_b?#(here)
-		here = @board.wking
+	 
+	def checks_b?(here = nil, useking = true)
+		here = here == nil ? @board.wking : here
+		#fail if @board.find_white_king != here
 		81.times do |i|
-			@x_checks, @y_checks = i % 9, i / 9 
+			@x_checks, @y_checks = i % 9, (i / 9).to_i
 			case @board.brd[i]
 			when -1 then return true if pawn_checks_b?(here)
 			when -2 then return true if jump_checks_to?(BLACK_GOLD_GENERAL_MOVES, here)
@@ -159,7 +152,7 @@ class Mgen
 			when -11 then return true if slider_checks_to?(BISHOP_MOVES, here) || jump_checks_to?(PROMOTED_BISHOP_MOVES, here)
 			when -12 then return true if slider_checks_to?(ROOK_MOVES, here)
 			when -13 then return true if slider_checks_to?(ROOK_MOVES, here) || jump_checks_to?(PROMOTED_ROOK_MOVES, here)
-			when -14 then return true if jump_checks_to?(KING_MOVES, here)
+			when -14 then return true if useking && jump_checks_to?(KING_MOVES, here)
 			end
 		end
 		false

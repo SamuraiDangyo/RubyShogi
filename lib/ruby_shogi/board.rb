@@ -87,6 +87,11 @@ class Board
 		s
 	end
 	
+	def mustbeok
+		fail if find_white_king != @wking
+		fail if find_black_king != @bking
+	end
+	
 	def wtm2str
 		@wtm ? "w" : "b"
 	end
@@ -113,7 +118,6 @@ class Board
 	end
 		
 	def make_move(me, from, to)
-		#fail unless (good_coord?(from) && good_coord?(to))
 		@eat = @brd[to]
 		@brd[to] = me
 		@brd[from] = 0
@@ -183,15 +187,15 @@ class Board
 	end
 	
 	def empty?(i)
-		@brd[i] == 0
+		@brd[i].zero?
 	end
 	
 	def walkable_w?(square)
-		@brd[square] < 1
+		@brd[square] <= 0
 	end
 	
 	def walkable_b?(square)
-		@brd[square] > -1
+		@brd[square] >= 0
 	end
 	
 	def is_on_board?(x, y)	
@@ -395,6 +399,10 @@ class Board
 		s.strip.length == 0 ? "-" : s
 	end
 	
+	def move2str
+		move_str
+	end
+	
 	def move_str
 		if @drop != 0
 			s = "#{number2piece(@drop).upcase}@"
@@ -417,14 +425,30 @@ class Board
 		s
 	end
 		
-	def randpos
+	def randpos2
 		copy = RubyShogi::Board.new
-		copy.brd[rand(0..	32)] = 14
-		copy.brd[rand((81-32)..80)] = -14
-		32.times { |i| copy.brd[32 + i] = rand(-13..13) if rand < 0.3 }
-		3.times { |i| copy.white_pocket.push([1, 3, 5, 7, 9].sample) }
-		3.times { |i| copy.black_pocket.push([-1, -3, -5, -7, -9].sample) }
+		copy.brd[rand(0..9)] = 14
+		copy.brd[rand(71..80)] = -14
+		8.times { |i| copy.brd[32 + i] = rand(-13..13) if rand < 0.3 }
+		3.times { |i| copy.white_pocket.push([1, 3, 5, 7, 9].sample) if rand < 0.3  }
+		3.times { |i| copy.black_pocket.push([-1, -3, -5, -7, -9].sample) if rand < 0.3 }
+		copy.wking = copy.find_white_king
+		copy.bking = copy.find_black_king
 		copy
+	end
+	
+		
+	def randpos
+		brd = nil
+		loop do
+			brd = randpos2
+			brd2 = brd
+			mgen = brd.mgen_generator
+			next if mgen.checks_b? || mgen.checks_w?
+			break
+		end
+		brd.mustbeok
+		brd
 	end
 	
 	def print_board
