@@ -10,8 +10,8 @@
 
 xboard: clean
 	xboard -cp \
+		-fcp "ruby ruby_shogi.rb -randommode -xboard" \
 		-scp "ruby ruby_shogi.rb -randommode -xboard" \
-		-fcp "ruby ruby_shogi.rb -xboard" \
 		-debug
 		
 run: clean
@@ -32,6 +32,9 @@ bench: clean
 mbench: clean
 	ruby ruby_shogi.rb -mbench
 
+perft_by_moves: clean
+	ruby ruby_shogi.rb -perft_by_moves
+	
 perft: clean
 	ruby ruby_shogi.rb -perft
 	
@@ -42,7 +45,7 @@ numbers: clean
 	ruby ruby_shogi.rb -numbers
 
 suite: clean
-	ruby ruby_shogi.rb -suite 5
+	ruby ruby_shogi.rb -suite
 
 test: clean
 	ruby ruby_shogi.rb -test

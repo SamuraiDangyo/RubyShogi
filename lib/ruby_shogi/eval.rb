@@ -84,6 +84,28 @@ module Eval
 	end
 	
 	def Eval.material(board)
+		board.print_board
+		puts Eval.material2(board)
+		puts Eval.material3(board)
+		fail if Eval.material2(board) != Eval.material3(board)
+		0
+	end
+	
+	def Eval.material3(board)
+		score = board.brd.inject do |sum, p|
+			sum += case p
+				when 1..14 then MATERIAL_SCORE[p]
+				when -14..-1 then -MATERIAL_SCORE[-p]
+				else 
+					0
+				end
+		end
+		board.white_pocket.each { |p| score += MATERIAL_HAND_SCORE[p] }
+		board.black_pocket.each { |p| score -= MATERIAL_HAND_SCORE[-p] }
+		score
+	end
+	
+	def Eval.material2(board)
 		score = 0
 		board.brd.each do |p|
 			score += case p

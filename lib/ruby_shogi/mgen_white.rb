@@ -26,34 +26,43 @@ class MgenWhite < RubyShogi::Mgen
 		copy.brd[@from_gen] = 0
 		copy.brd[to] = me
 		copy.wking = to if me == 14
-		#fail if copy.find_white_king != copy.wking
+		copy.mustbeok
 		@board = copy
 		@moves.push << copy if !checks_b?
 		@board = board2
 	end
 	
+	def can_black_king_run?(to2) 
+		x, y = to2 % 9, to2 / 9
+		KING_MOVES.each do |jmp|
+			px, py = x + jmp[0], y + jmp[1]
+			return true if is_on_board?(px, py) && @board.walkable_b?(px + 9 * py) && !checks_w?(px + 9 * py, false)
+		end
+		false
+	end
+	
 	def pawn_drop_checkmate?(to) 
-		@board.brd[to + 9] == -14 && !checks_b?(to + 9) ? true : false
+		@board.brd[to + 9] == -14 && (!checks_b?(to, false) && !can_black_king_run?(to + 9)) ? true : false
 	end
 	
 	def add_new_drop_move(me, to)
 		return if me == 3 && to / 9 == 8
 		return if me == 5 && to / 9 >= 7
+		fail if !@board.brd[to].zero?
 		board2 = @board
 		copy = @board.copy_me
-		copy.from = @from_gen
+		copy.from = -1
 		copy.to = to
 		copy.drop = me
 		copy.eat = 0
 		copy.r50 += 1
 		copy.fullmoves += 1
-		copy.wtm = ! copy.wtm
-		copy.brd[@from_gen] = 0
+		copy.wtm = !copy.wtm
 		copy.brd[to] = me
 		copy.white_pocket = remove_from_array(copy.white_pocket, me)
-		#fail if copy.find_white_king != copy.wking
+		copy.mustbeok	
 		@board = copy
-		if !checks_b? && !(me == -1 && pawn_drop_checkmate?(to))
+		if !checks_b? && !(me == 1 && pawn_drop_checkmate?(to))
 			@moves.push << copy
 		end
 		@board = board2
@@ -164,33 +173,30 @@ class MgenWhite < RubyShogi::Mgen
 	end
 	
 	def pawn_on_column?(c)
-		ret = false
 		9.times do |i|
 			to = 9 * i + c
-			if to != @from_gen && @board.brd[to] == 1
-				ret = true
-				break
-			end
+			return true if to != @from_gen && @board.brd[to] == 1
 		end
-		ret
+		false
 	end
 	
 	def put_pawn_drops
 		(9*8).times do |i| 
 			@x_gen, @y_gen, @from_gen = i % 9, i / 9, i
-			add_new_drop_move(1, i) if !pawn_on_column?(i % 9 ) && @board.brd[i] == 0
+			add_new_drop_move(1, i) if !pawn_on_column?(i % 9 ) && @board.brd[i].zero?
 		end
 	end
 	
 	def put_drops(piece)
 		81.times do |i| 
 			@x_gen, @y_gen, @from_gen = i % 9, i / 9, i
-			add_new_drop_move(piece, i) if @board.brd[i] == 0
+			add_new_drop_move(piece, i) if @board.brd[i].zero?
 		end
 	end
 	
 	def generate_drops
-		@board.white_pocket.each do |piece|
+		nodub = @board.white_pocket.dup.uniq
+		nodub.each do |piece|
 			case piece
 			when 1 then put_pawn_drops
 			when 3 then put_drops(3)
@@ -200,6 +206,8 @@ class MgenWhite < RubyShogi::Mgen
 			when 10 then put_drops(10)
 			when 11 then put_drops(11)
 			when 12 then put_drops(12)
+			else
+				fail
 			end
 		end
 		@moves
