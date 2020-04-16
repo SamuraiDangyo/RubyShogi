@@ -1476,7 +1476,7 @@ class Cmd
     if ARGV.length == 1 and ARGV[0] == "-version"
       puts "#{RubyShogi::NAME} by Toni Helminen"
       return
-    elsif ARGV.length == 2 and ARGV[0] == "-random"
+    elsif ARGV.length == 1 and ARGV[0] == "-random"
       @random_mode = true
     end
     xboard
