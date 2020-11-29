@@ -1,42 +1,63 @@
-# RubyShogi, a Shogi Engine written in Ruby
-# Toni Helminen
-# GPLv3
+#
+# RubyShogi. Shogi engine written in Ruby
+# Copyright (C) 2020 Toni Helminen
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+# Module
 
 module RubyShogi
-NAME = "RubyShogi 0.42"
+
+# Constants
+
+NAME = "RubyShogi 1.0"
+
+# Class
 
 class Board
   START_POS = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL[-] w 0 1"
 
   PIECES = {
     ".":    0, # .
-    "P":    1, # Pawn
+    "P":   +1, # Pawn
     "p":   -1,
-    "+P":   2, # Promoted Pawn
+    "+P":  +2, # Promoted Pawn
     "+p":  -2,
-    "L":    3, # Lance
+    "L":   +3, # Lance
     "l":   -3,
-    "+L":   4, # Promoted Lance
+    "+L":  +4, # Promoted Lance
     "+l":  -4,
-    "N":    5, # Knight
+    "N":   +5, # Knight
     "n":   -5,
-    "+N":   6, # Promoted Knight
+    "+N":  +6, # Promoted Knight
     "+n":  -6,
-    "S":    7, # Silver
+    "S":   +7, # Silver
     "s":   -7,
-    "+S":   8, # Promoted Silver
+    "+S":  +8, # Promoted Silver
     "+s":  -8,
-    "G":    9, # Gold
+    "G":   +9, # Gold
     "g":   -9,
-    "B":   10, # Bishop
+    "B":  +10, # Bishop
     "b":  -10,
-    "+B":  11, # Promoted Bishop
+    "+B": +11, # Promoted Bishop
     "+b": -11,
-    "R":   12, # Rook
+    "R":  +12, # Rook
     "r":  -12,
-    "+R":  13, # Promoted Rook
+    "+R": +13, # Promoted Rook
     "+r": -13,
-    "K":   14, # King
+    "K":  +14, # King
     "k":  -14
   }.freeze
 
@@ -57,9 +78,11 @@ class Board
 
   def brd2str
     str, empty, counter = "", 0, 0
-    80.times do |j|
+
+    80.times do | j |
       sq = 10 * (7 - j / 10) + ( j % 10 )
       piece = @brd[sq]
+
       if piece != 0
         if empty > 0
           str += empty.to_s
@@ -76,12 +99,12 @@ class Board
         empty = 0
       end
     end
+
     str
   end
 
   def mustbeok
-    fail if find_white_king != @wking
-    fail if find_black_king != @bking
+    fail if find_white_king != @wking or find_black_king != @bking
   end
 
   def wtm2str
@@ -98,14 +121,23 @@ class Board
 
   def create_hash
     @hash = 0
-    81.times { |sq| @hash ^= RubyShogi::Zobrist.get(20 * sq + 8 + @brd[sq]) }
+
+    81.times { | sq |       
+      @hash ^= RubyShogi::Zobrist.get(20 * sq + 8 + @brd[sq]) 
+    }
+
     @hash ^= RubyShogi::Zobrist.get(20 * 80 + (@wtm ? 1 : 0))
   end
 
   def legal?
-    pieces = [0] * 20
-    @brd.each { |piece| pieces[piece + 9] += 1 }
+    pieces = 20 * [0]
+
+    @brd.each { | piece | 
+      pieces[piece + 9] += 1 
+    }
+
     return false if pieces[-6 + 9] == 0 || pieces[6 + 9] == 0
+
     true
   end
 
@@ -115,15 +147,15 @@ class Board
   end
 
   def find_white_king
-    @brd.index { |x| x == 14 }
+    @brd.index { | x | x == 14 }
   end
 
   def find_black_king
-    @brd.index { |x| x == -14 }
+    @brd.index { | x | x == -14 }
   end
 
   def find_piece_all(piece)
-    @brd.index { |x| x == piece }
+    @brd.index { | x | x == piece }
   end
 
   # scans ->
@@ -138,14 +170,14 @@ class Board
 
   # scans ->
   def just_kings?
-    81.times do |sq|
+    81.times do | sq |
       return false if @brd[sq] != 14 && @brd[sq] != -14
     end
     true
   end
 
   def material_draw?
-    81.times do |sq|
+    81.times do | sq |
       return false if @brd[sq] != 14 && @brd[sq] != -14 && @brd[sq] != 0
     end
     true
@@ -241,7 +273,7 @@ class Board
   end
 
   def mirror_board
-    (4*9).times do |sq|
+    (4 * 9).times do |sq|
       x, y = sq % 9, sq / 9
       flip_y = x + (8 - y) * 9
       p1 = @brd[sq]
@@ -323,8 +355,11 @@ class Board
 
   def fen(str2)
     initme
+
     str = str2.strip.split(" ")
+
     fail if str.length < 3
+
     tmp = str[0].strip.split("[")
     fen_board(tmp[0])
     fen_pocket(tmp[1])
@@ -382,7 +417,6 @@ class Board
     copy
   end
 
-
   def randpos
     brd = nil
     loop do
@@ -396,34 +430,37 @@ class Board
   end
 
   def print_board
-    s =""
+    s = "  "
+    9.times { | i | s << " " << ("a".ord + i).chr }
+    s << "\n"
     81.times do | i |
       x, y = i % 9, i / 9
       p = @brd[9 * (8 - y) + x]
       ch = "."
-      PIECES.each do |pie, num|
+      PIECES.each do | pie, num |
         if num.to_i == p.to_i
           ch = pie.to_s
           break
         end
       end
+      s << " #{((9 - i / 9).to_i).to_s}" if x == 0
       s << " " if ch.length < 2
-      s << ch
-         if (i + 1) % 9 == 0
-        s << " #{((9 - i / 9).to_i).to_s}\n"
-         end
+      s << ch 
+      s << " #{((9 - i / 9).to_i).to_s}" if x == 8
+      s << " White?: #{@wtm}" if x == 8 and y == 0
+      s << " Rule50: #{(@r50 / 2).to_i}" if x == 8 and y == 1
+      s << " Pocket: #{pocket2str}" if x == 8 and y == 2
+      s << "\n" if x == 8
     end
+    s << "  "
     9.times { |i| s << " " << ("a".ord + i).chr }
-    s << "\n[ wtm: #{@wtm} ]\n"
-    s << "[ r50: #{(@r50/2).to_i} ]\n"
-    s << "[ pocket: #{pocket2str} ]\n"
-    s << "[ fen: #{pos2fen} ]\n"
+    #s << "[ fen: #{brd2str} ]\n"
     puts s
   end
 end # class Board
 
 class Engine
-  attr_accessor :board, :random_mode, :gameover, :move_now, :debug, :time, :movestogo, :printinfo
+  attr_accessor :board, :gameover, :move_now, :debug, :time, :movestogo, :printinfo
 
   INF              = 1000
   MATERIAL_SCALE   = 0.01
@@ -431,10 +468,9 @@ class Engine
   RESULT_BLACK_WIN = 2
   RESULT_WHITE_WIN = 4
 
-  def initialize(random_mode: false)
+  def initialize
     init_mate_bonus
     @board        = RubyShogi::Board.new
-    @random_mode  = random_mode
     @history      = RubyShogi::History.new
     @board.startpos
     @printinfo, @time, @movestogo, @stop_time, @stop_search, @nodes, @move_now, @gameover = true, 10, 40, 0, false, 0, false, false
@@ -462,31 +498,34 @@ class Engine
   end
 
   def print_move_list(moves)
-    moves.each_with_index { |board, i| puts "#{i} / #{board.move_str} / #{board.score}" }
+    moves.each_with_index { | board, i | puts "#{i} / #{board.move_str} / #{board.score}" }
   end
 
   def move_list
     mgen = @board.mgen_generator
     moves = mgen.generate_moves
-    moves.each_with_index { |board, i| puts "#{i} / #{board.move_str} / #{board.score}" }
+    moves.each_with_index { | board, i | puts "#{i} / #{board.move_str} / #{board.score}" }
   end
 
   def make_move?(move)
     mgen = @board.mgen_generator
     moves = mgen.generate_moves
-    moves.each do |board|
+
+    moves.each do | board |
       if board.move_str == move
         @history.add(board)
         @board = board
         return true
       end
     end
-    puts "illegal move: #{move}"
+
+    puts "Illegal move: #{move}"
     false
   end
 
   def print_score(moves, depth, started)
     return unless @printinfo
+
     moves = moves.sort_by(&:score).reverse
     best = moves[0]
     n = (100 * (Time.now - started)).to_i
@@ -498,11 +537,14 @@ class Engine
     @stop_search = Time.now > @stop_time || total > 90
     return 0 if @stop_search
     return MATERIAL_SCALE * cur.material if depth < 1
+
     mgen = RubyShogi::MgenWhite.new(cur)
     moves = mgen.generate_moves
+
     if moves.length == 0 # assume mate
       return mgen.checks_b? ? 0.1 * @mate_bonus[total] * -INF + rand : 1
     end
+
     search_moves_b(moves.sample, depth - 1, total + 1)
   end
 
@@ -526,7 +568,7 @@ class Engine
     @stop_time = now + (@time / divv)
     depth = 2
     while true
-      moves.each do |board|
+      moves.each do | board |
         next if board.nodetype == 2
         depth = 3 + rand(20)
         board.score += board.wtm ? search_moves_w(board, depth, 0) : search_moves_b(board, depth, 0)
@@ -557,16 +599,19 @@ class Engine
   def game_status(mgen, moves)
     if moves.length == 0
       if @board.wtm && mgen.checks_b?
-        return RubyShogi::Engine::RESULT_BLACK_WIN
+        return Engine::RESULT_BLACK_WIN
       elsif !@board.wtm && mgen.checks_w?
         return RubyShogi::Engine::RESULT_WHITE_WIN
       end
       return RubyShogi::Engine::RESULT_DRAW
     end
+
     @board.create_hash
+
     if @history.is_draw?(@board, 3) || @board.material_draw?
       return RubyShogi::Engine::RESULT_DRAW
     end
+
     0
   end
 
@@ -585,12 +630,14 @@ class Engine
         return true
       end
     end
+
     false
   end
 
   def is_gameover?(mgen, moves)
     @board.create_hash
     return true if jishogi?
+
     if @board.fullmoves > 900
       puts "1/2-1/2 {Draw by Max Moves}"
       return true
@@ -608,6 +655,7 @@ class Engine
         return true
       end
     end
+
     false
   end
 
@@ -616,7 +664,7 @@ class Engine
     @time = 500
     think
     diff = Time.now - t
-    puts "= #{@nodes} nodes | #{diff.round(3)} s | #{(@nodes/diff).to_i} nps"
+    puts "\n===\n\nNodes: #{@nodes}\nTime: #{diff.round(3)}\nNps: #{(@nodes/diff).to_i}"
   end
 
   def think
@@ -630,13 +678,9 @@ class Engine
     func = -> { board.wtm ? moves.sort_by(&:score).reverse : moves.sort_by(&:score) }
     @gameover = is_gameover?(mgen, moves)
     return if @gameover
-    if @random_mode
-      @board = moves.sample
-    else
-      search(moves)
-      moves = func.call
-      @board = moves[0]
-    end
+    search(moves)
+    moves = func.call
+    @board = moves[0]
     @history.add(@board)
     @board.move_str
   end
@@ -659,7 +703,7 @@ module Eval
     12 => 10.4,
     13 => 13,
     14 => 0
-  }
+  }.freeze
 
   MATERIAL_HAND_SCORE = {
     1 =>  1.15,
@@ -670,20 +714,25 @@ module Eval
     10 => 11.10,
     12 => 10.4,
     13 => 12.7
-  }
+  }.freeze
 
   def Eval.material(board)
     score = 0
-    board.brd.each do |piece|
+
+    board.brd.each do | piece |
       score += case piece
-        when 1..14   then MATERIAL_SCORE[ piece]
-        when -14..-1 then -MATERIAL_SCORE[-piece]
+        when 1..14   
+          MATERIAL_SCORE[ piece]
+        when -14..-1  
+          -MATERIAL_SCORE[-piece]
         else
           0
         end
     end
-    board.white_pocket.each { |piece| score += MATERIAL_HAND_SCORE[ piece] }
-    board.black_pocket.each { |piece| score -= MATERIAL_HAND_SCORE[-piece] }
+
+    board.white_pocket.each { | piece | score += MATERIAL_HAND_SCORE[ piece] }
+    board.black_pocket.each { | piece | score -= MATERIAL_HAND_SCORE[-piece] }
+
     score
   end
 end # module Eval
@@ -732,18 +781,20 @@ class History
   def is_draw?(board, repsn = 4)
     len, hash = @data.length, board.hash
     i, maxply, reps = len - 1, 0, 0
+
     while i > 0
       break if maxply >= 100
       reps += 1 if hash == @data[i].hash
       maxply, i = maxply + 1, i - 1
       return true if reps >= repsn
     end
+
     false
   end
 end # class History
 
 class Mgen
-  # both
+  # Both
   ROOK_MOVES   = [[1, 0], [0, 1], [-1, 0], [0, -1]].freeze
   BISHOP_MOVES = [[1, 1], [-1, 1], [1, -1], [-1, -1]].freeze
   KING_MOVES   = (ROOK_MOVES + BISHOP_MOVES).freeze
@@ -751,19 +802,19 @@ class Mgen
   PROMOTED_BISHOP_MOVES = ROOK_MOVES
   PROMOTED_ROOK_MOVES   = BISHOP_MOVES
 
-  # white
+  # White
   WHITE_GOLD_GENERAL_MOVES    = [[1, 0], [-1, 0], [0, -1], [0, 1], [1, 1], [-1, 1]].freeze
   WHITE_SILVER_GENERAL_MOVES  = [[-1, -1], [-1, 1], [0, 1], [1, 1], [1, -1]].freeze
   WHITE_KNIGHT_MOVES          = [[-1, 2], [1, 2]].freeze
   WHITE_LANCE_MOVES           = [[0, 1]].freeze
 
-  # black
+  # Black
   BLACK_GOLD_GENERAL_MOVES    = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, -1]].freeze
   BLACK_SILVER_GENERAL_MOVES  = [[-1, 1], [-1, -1], [0, -1], [1, -1], [1, 1]].freeze
   BLACK_KNIGHT_MOVES          = [[-1, -2], [1, -2]].freeze
   BLACK_LANCE_MOVES           = [[0, -1]].freeze
 
-  # promotions
+  # Promotions
   PROMO_NO   = 0
   PROMO_STAY = 1
   PROMO_YES  = 2
@@ -1030,7 +1081,7 @@ class MgenBlack < RubyShogi::Mgen
   end
 
   def generate_jump_moves(jumps, me)
-    jumps.each do |jmp|
+    jumps.each do | jmp |
       px, py = @x_gen + jmp[0], @y_gen + jmp[1]
       to = px + 9 * py
       add_new_move(me, to) if is_on_board?(px, py) && @board.walkable_b?(to)
@@ -1051,7 +1102,7 @@ class MgenBlack < RubyShogi::Mgen
   end
 
   def pawn_on_column?(column)
-    9.times do |sq|
+    9.times do | sq |
       to = 9 * sq + column
       return true if to != @from_gen && @board.brd[to] == -1
     end
@@ -1059,7 +1110,7 @@ class MgenBlack < RubyShogi::Mgen
   end
 
   def put_pawn_drops
-    (9*8).times do |sq|
+    (9*8).times do | sq |
       to = sq + 9
       @x_gen, @y_gen, @from_gen = to % 9, to / 9, to
       add_new_drop_move(-1, to) if (!pawn_on_column?(to % 9 ) && @board.brd[to].zero?)
@@ -1067,7 +1118,7 @@ class MgenBlack < RubyShogi::Mgen
   end
 
   def put_drops(piece)
-    81.times do |sq|
+    81.times do | sq |
       @x_gen, @y_gen, @from_gen = sq % 9, sq / 9, sq
       add_new_drop_move(piece, sq) if @board.brd[sq].zero?
     end
@@ -1075,7 +1126,8 @@ class MgenBlack < RubyShogi::Mgen
 
   def generate_drops
     nodub = @board.black_pocket.dup.uniq
-    nodub.each do |piece|
+
+    nodub.each do | piece |
       case piece
       when -1  then put_pawn_drops
       when -3  then put_drops(-3)
@@ -1087,34 +1139,38 @@ class MgenBlack < RubyShogi::Mgen
       when -12 then put_drops(-12)
       end
     end
+
     @moves
   end
 
   def generate_moves
     @moves = []
-    81.times do |sq|
+
+    81.times do | sq |
       @x_gen, @y_gen, @from_gen = sq % 9, sq / 9, sq
       case @board.brd[sq]
-      when -1 then generate_pawn_moves
-      when -2 then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -2)
-      when -3 then generate_slider_moves(BLACK_LANCE_MOVES, -3)
-      when -4 then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -4)
-      when -5 then generate_jump_moves(BLACK_KNIGHT_MOVES, -5)
-      when -6 then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -6)
-      when -7 then generate_jump_moves(BLACK_SILVER_GENERAL_MOVES, -7)
-      when -8 then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -8)
-      when -9 then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -9)
+      when -1  then generate_pawn_moves
+      when -2  then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -2)
+      when -3  then generate_slider_moves(BLACK_LANCE_MOVES, -3)
+      when -4  then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -4)
+      when -5  then generate_jump_moves(BLACK_KNIGHT_MOVES, -5)
+      when -6  then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -6)
+      when -7  then generate_jump_moves(BLACK_SILVER_GENERAL_MOVES, -7)
+      when -8  then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -8)
+      when -9  then generate_jump_moves(BLACK_GOLD_GENERAL_MOVES, -9)
       when -10 then generate_slider_moves(BISHOP_MOVES, -10)
       when -11
         generate_slider_moves(BISHOP_MOVES, -11)
         generate_jump_moves(PROMOTED_BISHOP_MOVES, -11)
-      when -12 then generate_slider_moves(ROOK_MOVES, -12)
+      when -12 
+        generate_slider_moves(ROOK_MOVES, -12)
       when -13
         generate_slider_moves(ROOK_MOVES, -13)
         generate_jump_moves(PROMOTED_ROOK_MOVES, -13)
       when -14 then generate_jump_moves(KING_MOVES, -14)
       end
     end
+
     generate_drops
   end
 end # class MgenBlack
@@ -1147,10 +1203,11 @@ class MgenWhite < RubyShogi::Mgen
 
   def can_black_king_run?(to2)
     x, y = to2 % 9, to2 / 9
-    KING_MOVES.each do |jmp|
+    KING_MOVES.each do | jmp |
       px, py = x + jmp[0], y + jmp[1]
       return true if is_on_board?(px, py) && @board.walkable_b?(px + 9 * py) && !checks_w?(px + 9 * py, false)
     end
+
     false
   end
 
@@ -1161,7 +1218,9 @@ class MgenWhite < RubyShogi::Mgen
   def add_new_drop_move(me, to)
     return if me == 3 && to / 9 == 8
     return if me == 5 && to / 9 >= 7
+
     fail if !@board.brd[to].zero?
+
     board2          = @board
     copy            = @board.copy_me
     copy.from       = -1
@@ -1174,10 +1233,12 @@ class MgenWhite < RubyShogi::Mgen
     copy.brd[to]    = me
     copy.white_pocket = remove_from_array(copy.white_pocket, me)
     copy.mustbeok
+
     @board = copy
     if !checks_b? && !(me == 1 && pawn_drop_checkmate?(to))
       @moves.push << copy
     end
+
     @board = board2
   end
 
@@ -1191,6 +1252,7 @@ class MgenWhite < RubyShogi::Mgen
       when 10..11 then 10
       when 12..13 then 12
       end
+
     copy.white_pocket.push(piece)
   end
 
@@ -1202,6 +1264,7 @@ class MgenWhite < RubyShogi::Mgen
   def handle_promotion?(me, to)
     return true if must_promote?(me, to)
     return false if to / 9 <= 5 && @from_gen / 9 <= 5
+
     case me
     when 1
       push_move(1, to, PROMO_STAY)
@@ -1228,6 +1291,7 @@ class MgenWhite < RubyShogi::Mgen
       push_move(13, to, PROMO_YES)
       return true
     end
+
     false
   end
 
@@ -1236,7 +1300,9 @@ class MgenWhite < RubyShogi::Mgen
       push_move(6, to, PROMO_YES)
       return true
     end
+
     return false if to / 9 != 8
+
     case me
     when 1
       push_move(2, to, PROMO_YES)
@@ -1245,6 +1311,7 @@ class MgenWhite < RubyShogi::Mgen
       push_move(4, to, PROMO_YES)
       return true
     end
+
     false
   end
 
@@ -1253,14 +1320,15 @@ class MgenWhite < RubyShogi::Mgen
     when 6..7
       push_move(1, to, PROMO_STAY)
       push_move(2, to, PROMO_YES)
-    when 8 then push_move(2, to, PROMO_YES)
+    when 8
+      push_move(2, to, PROMO_YES)
     else
       push_move(1, to, PROMO_NO)
     end
   end
 
   def generate_pawn_moves
-    to = @x_gen + (@y_gen + 1) * 9
+    to = @x_gen + 9 * (@y_gen + 1)
     add_new_pawn_move(to) if (to < 81 && @board.walkable_w?(to))
   end
 
@@ -1273,8 +1341,9 @@ class MgenWhite < RubyShogi::Mgen
   end
 
   def generate_slider_moves(slider, me)
-    slider.each do |jmp|
+    slider.each do | jmp |
       px, py = @x_gen, @y_gen
+
       loop do
         px, py = px + jmp[0], py + jmp[1]
         break if !is_on_board?(px, py)
@@ -1286,7 +1355,7 @@ class MgenWhite < RubyShogi::Mgen
   end
 
   def pawn_on_column?(column)
-    9.times do |y|
+    9.times do | y |
       to = 9 * y + column
       return true if to != @from_gen && @board.brd[to] == 1
     end
@@ -1294,14 +1363,14 @@ class MgenWhite < RubyShogi::Mgen
   end
 
   def put_pawn_drops
-    (9*8).times do |sq|
+    (9 * 8).times do | sq |
       @x_gen, @y_gen, @from_gen = sq % 9, sq / 9, sq
       add_new_drop_move(1, sq) if !pawn_on_column?(sq % 9 ) && @board.brd[sq].zero?
     end
   end
 
   def put_drops(piece)
-    81.times do |sq|
+    81.times do | sq |
       @x_gen, @y_gen, @from_gen = sq % 9, sq / 9, sq
       add_new_drop_move(piece, sq) if @board.brd[sq].zero?
     end
@@ -1309,7 +1378,8 @@ class MgenWhite < RubyShogi::Mgen
 
   def generate_drops
     nodub = @board.white_pocket.dup.uniq
-    nodub.each do |piece|
+
+    nodub.each do | piece |
       case piece
       when 1  then put_pawn_drops
       when 3  then put_drops(3)
@@ -1319,27 +1389,30 @@ class MgenWhite < RubyShogi::Mgen
       when 10 then put_drops(10)
       when 11 then put_drops(11)
       when 12 then put_drops(12)
-      else
+      else 
         fail
       end
     end
+
     @moves
   end
 
   def generate_moves
     @moves = []
-    81.times do |sq|
+
+    81.times do | sq |
       @x_gen, @y_gen, @from_gen = sq % 9, sq / 9, sq
+
       case @board.brd[sq]
-      when 1 then  generate_pawn_moves
-      when 2 then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 2)
-      when 3 then generate_slider_moves(WHITE_LANCE_MOVES, 3)
-      when 4 then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 4)
-      when 5 then generate_jump_moves(WHITE_KNIGHT_MOVES, 5)
-      when 6 then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 6)
-      when 7 then generate_jump_moves(WHITE_SILVER_GENERAL_MOVES, 7)
-      when 8 then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 8)
-      when 9 then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 9)
+      when 1  then  generate_pawn_moves
+      when 2  then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 2)
+      when 3  then generate_slider_moves(WHITE_LANCE_MOVES, 3)
+      when 4  then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 4)
+      when 5  then generate_jump_moves(WHITE_KNIGHT_MOVES, 5)
+      when 6  then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 6)
+      when 7  then generate_jump_moves(WHITE_SILVER_GENERAL_MOVES, 7)
+      when 8  then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 8)
+      when 9  then generate_jump_moves(WHITE_GOLD_GENERAL_MOVES, 9)
       when 10 then generate_slider_moves(BISHOP_MOVES, 10)
       when 11
         generate_slider_moves(BISHOP_MOVES, 11)
@@ -1348,25 +1421,23 @@ class MgenWhite < RubyShogi::Mgen
       when 13
         generate_slider_moves(ROOK_MOVES, 13)
         generate_jump_moves(PROMOTED_ROOK_MOVES, 13)
-      when 14 then generate_jump_moves(KING_MOVES, 14)
-      end
+      when 14 then generate_jump_moves(KING_MOVES, 14) end
     end
+
     generate_drops
   end
 end # class MgenWhite
 
 class Xboard
-  def initialize(random_mode = false)
-    @random_mode = random_mode
-    @engine = RubyShogi::Engine.new(random_mode: random_mode)
+  def initialize
+    @engine = RubyShogi::Engine.new
     @movestogo_orig, @forcemode = 40, false
     Signal.trap("SIGPIPE", "SYSTEM_DEFAULT")
     trap("INT", "IGNORE") # no interruptions
   end
 
   def print_xboard
-    rv = @random_mode ? " random" : ""
-    puts "feature myname=\"#{RubyShogi::NAME}#{rv}\""
+    puts "feature myname=\"#{RubyShogi::NAME}\""
     puts "feature variants=\"shogi\""
     puts "feature setboard=1"
     puts "feature ping=1"
@@ -1390,7 +1461,7 @@ class Xboard
   end
 
   def cmd_new
-    @engine = RubyShogi::Engine.new(random_mode: @random_mode)
+    @engine = RubyShogi::Engine.new
     @canmakemove = true
   end
 
@@ -1423,8 +1494,6 @@ class Xboard
     $stdin.each do |cmd|
       cmd.strip!
       case cmd
-      when "xboard", "hard", "easy", "random", "nopost", "post", "white", "black", /^computer/, /^st/, /^otim/, /^accepted/, /^result/ then
-        # ignore
       when "remove"             then @engine.history_remove
       when "undo"               then @engine.history_undo
       when "?"                  then @engine.move_now = true
@@ -1440,48 +1509,57 @@ class Xboard
       when "p"                  then @engine.board.print_board
       when "force"              then @forcemode = true
       when "go"                 then cmd_go
-      else # assume move
-        cmd_move(cmd)
-      end
+      when /^\w\d\w\d.?/        then cmd_move(cmd) end # Assume move
     end
   end
-end # class Xboard
+end
 
 module Zobrist
   HASH = []
 
   def Zobrist.init
     return if HASH.length > 0
-    10_000.times do |i| HASH.push(rand(1024) | (rand(1024) << 10) | (rand(1024) << 20) | (rand(1024) << 30) | (rand(1024) << 40)) end
+   
+    10_000.times do |i|
+      HASH.push(rand(1024) | (rand(1024) << 10) | (rand(1024) << 20) | (rand(1024) << 30) | (rand(1024) << 40)) 
+    end
   end
 
   def Zobrist.get(nth)
     HASH[nth]
   end
-end # module Zobrist
+end
 
-class Cmd
-  attr_accessor :engine, :random_mode
+module Tactics
+  # TODO add more !
+  def Tactics.test
+    tactics = []
 
-  def initialize
-    @random_mode = false
+    p = Struct.new(:fen, :move).new
+    p.fen  = "1k7/9/1K7/9/9/9/3R5/9/9[] w - - 0 1"
+    p.move = "d3d9= d3d9+"
+    tactics.push(p)
+
+    p = Struct.new(:fen, :move).new
+    p.fen  = "9/9/ppp6/k8/9/PPN6/KN7/9/9[] w - 1"
+    p.move = "a4a5"
+    tactics.push(p)
+
+    tactics.each_with_index { 
+      | p, i |
+      b = Board.new
+      b.fen(p.fen)
+      mgen = b.mgen_generator
+
+      moves = mgen.generate_moves
+      e = Engine.new
+      e.board = b
+      e.time = 200
+    
+      puts p.move.split().include?(e.think) ? "\n#{i+1} OK\n" : "#{i+1} FAIL\n"
+    }
   end
-
-  def xboard
-    xboard = RubyShogi::Xboard.new(@random_mode)
-    xboard.go
-  end
-
-  def args
-    if ARGV.length == 1 and ARGV[0] == "-version"
-      puts "#{RubyShogi::NAME} by Toni Helminen"
-      return
-    elsif ARGV.length == 1 and ARGV[0] == "-random"
-      @random_mode = true
-    end
-    xboard
-  end
-end # class Cmd
+end
 
 module Main
   def Main.init
@@ -1492,13 +1570,29 @@ module Main
   end
 
   def Main.go
-    cmd = RubyShogi::Cmd.new
-    cmd.args
+    if ARGV.length == 1 and ARGV[0] == "--version"
+      puts "#{RubyShogi::NAME} by Toni Helminen"
+      return
+    end
+
+    if ARGV.length == 1 and ARGV[0] == "--test"
+      Tactics.test
+      return
+    end
+
+    if ARGV.length == 1 and ARGV[0] == "--bench"
+      e = Engine.new
+      e.bench
+      return
+    end
+
+    xboard = RubyShogi::Xboard.new
+    xboard.go
   end
-end # module Main
-end # module RubyShogi
+end
+end
 
 if __FILE__ == $0
-  RubyShogi::Main.init # init just once
+  RubyShogi::Main.init # Init just once
   RubyShogi::Main.go
 end

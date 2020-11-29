@@ -1,10 +1,11 @@
-# RubyShogi, a Shogi engine written in Ruby
+#
+# RubyShogi. Shogi engine written in Ruby
 # Toni Helminen
 # GPLv3
+#
 
-#-debug
-all:
-	xboard -cp -fcp "ruby RubyShogi.rb" -scp "ruby RubyShogi.rb -random"
+xboard:
+	xboard -cp -fcp "ruby RubyShogi.rb"
 
 clean:
 	rm -f games.pgn xboard.debug
